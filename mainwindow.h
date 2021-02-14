@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
+#include "hamedmediaplayer.h"
 #include "qnetwork.h"
 #include "QtNetwork/QNetworkReply"
 #include "QtNetwork/QNetworkAccessManager"
@@ -23,6 +23,10 @@
 #include "QFile"
 #include "QRegExp"
 #include "QDir"
+//#include "QMediaPlayer"
+//#include <QVideoWidget>
+#include "qvideowidget.h"
+
 
 
 QT_BEGIN_NAMESPACE
@@ -96,7 +100,7 @@ public:
 
 
 public:
-
+    //play
     struct struct_chat
     {
         int in;
@@ -121,6 +125,7 @@ public:
     QList<struct_chat> serial_Chat;
     QList<struct_moving> serial_Moving;
     QMap<QString,int> convertNameSlideTonumber;
+    HamedMediaPlayer *mediaPlayer1;
 
 
 

@@ -505,10 +505,27 @@ void mainwindow::player()
         serial_Moving[i].x=moving.mid(moving.indexOf("x=\"")+3,moving.indexOf("\" ",moving.indexOf("x=\""))-moving.indexOf("x=\"")-3).toInt();
         serial_Moving[i].y=moving.mid(moving.indexOf("y=\"")+3,moving.indexOf("\" ",moving.indexOf("y=\""))-moving.indexOf("y=\"")-3).toInt();
         moving.remove(0,moving.indexOf("\"/>")+3);
+
+    //*important* later should add shape example circle and path to this application
     }
 
 
 
+    //
+
+    mediaPlayer1=new HamedMediaPlayer(this);
+    mediaPlayer1->setMedia(QUrl::fromLocalFile("F:/c programer/winner 99.11/az-bbb/build-bbb-Desktop_Qt_5_15_2_MinGW_64_bit-Debug/Downloaded/4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554/deskshare1.webm"));
+    QVideoWidget *videoWidget1 = new QVideoWidget(this);
+    videoWidget1->show();
+    mediaPlayer1->setVideoOutput(videoWidget1);
+    mediaPlayer1->play();
+
+
+/*
+    mediaPlayer1=new HamedMediaPlayer(this);
+    mediaPlayer1->setMedia(QUrl::fromLocalFile("F:/c programer/winner 99.11/az-bbb/build-bbb-Desktop_Qt_5_15_2_MinGW_64_bit-Debug/Downloaded/4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554/deskshare1.webm"));
+    mediaPlayer1->play();
+*/
 
 
 }
