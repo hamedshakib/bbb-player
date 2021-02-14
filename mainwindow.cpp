@@ -20,10 +20,10 @@ void mainwindow::start_program()
 {
 
     add_hexTounicode();
-    mainUrl="https://blue.aut.ac.ir/playback/presentation/2.3/aafbd590b53508afa2497f062107ca4d7fef952b-1606726815618?meetingId=aafbd590b53508afa2497f062107ca4d7fef952b-1606726815618";
-    //mainUrl="https://blue.aut.ac.ir/playback/presentation/2.3/4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554?meetingId=4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554";
-    downloader();
-
+    //mainUrl="https://blue.aut.ac.ir/playback/presentation/2.3/aafbd590b53508afa2497f062107ca4d7fef952b-1606726815618?meetingId=aafbd590b53508afa2497f062107ca4d7fef952b-1606726815618";
+    mainUrl="https://blue.aut.ac.ir/playback/presentation/2.3/4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554?meetingId=4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554";
+    //downloader();
+    player();
 
 
 
@@ -42,25 +42,6 @@ void mainwindow::start_program()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void mainwindow::readSocket()
-{
-    qDebug()<<"so";
-    qDebug()<<socket1->readAll();
-}
 
 void mainwindow::downloader()
 {
@@ -136,7 +117,13 @@ void mainwindow::downloader()
     replay1 = manager1->get(request1);
     eventLoop.exec();
     QByteArray deskshare = replay1->readAll();
-
+    QString namefileDetailDeskshare1="Downloaded/"+meetingID+"/"+"deskshare1.xml";
+    detailDesshare_file.setFileName(namefileDetailDeskshare1);
+    if(detailDesshare_file.open(QIODevice::ReadWrite))
+    {
+        detailDesshare_file.write(deskshare);
+        detailDesshare_file.close();
+    }
 
 /*
     //deskshare_Asli just share screen
@@ -211,8 +198,17 @@ void mainwindow::downloader()
         QString tempi=str123.mid(re.indexIn(str123)-addad+1,54);
         address_ha.append(tempi);
         str123.replace(re.indexIn(str123),tempi.length(),"");
-
+        matchs.append(tempi);
     }
+        match_namefile.setFileName("Downloaded/"+meetingID+"/"+"matchs");
+        if(match_namefile.open(QIODevice::WriteOnly))
+        {
+            for(int i=0;i<matchs.count();i++)
+            {
+                QString str1=matchs[i]+"\n";
+                match_namefile.write(str1.toUtf8());
+            }
+        }
 
 
     //download slides
@@ -240,6 +236,22 @@ void mainwindow::downloader()
             file15.close();
           }
         }
+    }
+
+
+
+    //moveing
+    QString Moving="https://blue.aut.ac.ir/presentation/"+meetingID+"/shapes.svg";
+    request1.setUrl(Moving);
+    replay1 = manager1->get(request1);
+    eventLoop.exec();
+    moving = replay1->readAll();
+    QString namefileMoving="Downloaded/"+meetingID+"/"+"shapes.xml";
+    moving_file.setFileName(namefileMoving);
+    if(moving_file.open(QIODevice::ReadWrite))
+    {
+       moving_file.write(moving);
+       moving_file.close();
     }
 
 
@@ -399,6 +411,106 @@ QByteArray mainwindow::convertTounicode(QByteArray before)
         before.replace(temp,hexTounicode.value(temp).toUtf8());
     }
     return before;
+}
+
+
+
+void mainwindow::player()
+{
+    //read All
+    //read slides
+    QString address_downloaded="F:/c programer/winner 99.11/az-bbb/build-bbb-Desktop_Qt_5_15_2_MinGW_64_bit-Debug/Downloaded/4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554";
+    QDir dir1(address_downloaded+"/Slides");
+    dir1.setFilter( QDir::AllEntries | QDir::NoDotAndDotDot );
+    for(int i=0;i<dir1.count();i++)
+    {
+        serial_Slide.append(struct_Slides1());
+        QDir dir2(address_downloaded+"/Slides/"+QString::number(i+1));
+        dir2.setFilter( QDir::AllEntries | QDir::NoDotAndDotDot );
+        for(int j=0;j<dir2.count();j++)
+        {
+            QFile fileTemp;
+            fileTemp.setFileName(address_downloaded+"/Slides/"+QString::number(i)+"/slide-"+QString::number(j+1));
+            if(fileTemp.open(QIODevice::ReadOnly))
+            {
+            serial_Slide[serial_Slide.count()-1].slide1.append(fileTemp.readAll());
+            }
+        }
+    }
+
+
+
+    QPixmap pixmap1;
+    pixmap1.loadFromData(serial_Slide[0].slide1[0]);
+    ui->label->setPixmap(pixmap1.scaled(ui->label->width(),ui->label->height(),Qt::AspectRatioMode::KeepAspectRatio));
+
+    //read chats
+    chat_file.setFileName(address_downloaded+"/chats.xml");
+    if(chat_file.open(QIODevice::ReadOnly))
+    {
+        chats=chat_file.readAll();
+    }
+    for(int i=0;chats.indexOf("message=")!=-1;i++)
+    {
+    serial_Chat.append(struct_chat());
+    serial_Chat[serial_Chat.count()-1].in=chats.mid(chats.indexOf("in=\"")+4,chats.indexOf("\" ")-chats.indexOf("in=\"")-4).toInt();
+    serial_Chat[serial_Chat.count()-1].name=chats.mid(chats.indexOf("name=\"")+6,chats.indexOf("\" ",chats.indexOf("name=\""))-chats.indexOf("name=\"")-6);
+    serial_Chat[serial_Chat.count()-1].massage=chats.mid(chats.indexOf("message=\"")+9,chats.indexOf("\" ",chats.indexOf("message=\""))-chats.indexOf("message=\"")-9);
+    chats.remove(0,chats.indexOf("target=\"chat\"/>")+15);
+    }
+
+
+    //add match to slide stcuct
+    match_namefile.setFileName(address_downloaded+"/matchs");
+    if(match_namefile.open(QIODevice::ReadOnly))
+    {
+        for(int i=0;!match_namefile.atEnd();i++)
+        {
+        //serial_Slide[i].name=match_namefile.readLine();
+        QString readedLine=match_namefile.readLine();
+        convertNameSlideTonumber.insert(readedLine.replace(readedLine.indexOf('\n'),1,""),convertNameSlideTonumber.count());
+        }
+    }
+
+
+
+
+    //read shape
+    moving_file.setFileName(address_downloaded+"/shapes.xml");
+    if(moving_file.open(QIODevice::ReadOnly))
+    {
+        moving=moving_file.readAll();
+    }
+    for(int i=0;moving.indexOf("in=\"")!=-1 ;i++)
+    {
+        serial_Moving.append(struct_moving());
+        serial_Moving[i].in=moving.mid(moving.indexOf("in=\"")+4,moving.indexOf("\" ",moving.indexOf("in=\""))-moving.indexOf("in=\"")-4).toFloat();
+        serial_Moving[i].out=moving.mid(moving.indexOf("out=\"")+5,moving.indexOf("\" ",moving.indexOf("out=\""))-moving.indexOf("out=\"")-5).toFloat();
+        QString temp3=moving.mid(moving.indexOf("presentation/")+13,moving.indexOf("\" ",moving.indexOf("presentation/"))-moving.indexOf("presentation/")-13);
+        if(temp3.indexOf("/slide-")!=-1)
+        {
+            serial_Moving[i].number_seriSlide=convertNameSlideTonumber.value(temp3.mid(0,temp3.indexOf("/")));
+            serial_Moving[i].number_slide=temp3.mid(temp3.indexOf("/slide-")+7,moving.indexOf(".",moving.indexOf("/slide-"))-temp3.indexOf("/slide-")-7).toInt()-1;
+        }
+        else
+            if(temp3=="logo.png")
+                serial_Moving[i].number_seriSlide=-1;
+        else
+            if(temp3=="deskshare.png")
+                serial_Moving[i].number_seriSlide=-2;
+
+
+        serial_Moving[i].wigth=moving.mid(moving.indexOf("width=\"")+7,moving.indexOf("\" ",moving.indexOf("width=\""))-moving.indexOf("width=\"")-7).toInt();
+        serial_Moving[i].height=moving.mid(moving.indexOf("height=\"")+8,moving.indexOf("\" ",moving.indexOf("height=\""))-moving.indexOf("height=\"")-8).toInt();
+        serial_Moving[i].x=moving.mid(moving.indexOf("x=\"")+3,moving.indexOf("\" ",moving.indexOf("x=\""))-moving.indexOf("x=\"")-3).toInt();
+        serial_Moving[i].y=moving.mid(moving.indexOf("y=\"")+3,moving.indexOf("\" ",moving.indexOf("y=\""))-moving.indexOf("y=\"")-3).toInt();
+        moving.remove(0,moving.indexOf("\"/>")+3);
+    }
+
+
+
+
+
 }
 
 

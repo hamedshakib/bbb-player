@@ -29,6 +29,22 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class mainwindow; }
 QT_END_NAMESPACE
 
+
+struct struct_Slides1
+{
+    //QString name;
+    QVector<QByteArray> slide1;
+};
+
+
+
+
+
+
+
+
+
+
 class mainwindow : public QMainWindow
 {
     Q_OBJECT
@@ -43,10 +59,10 @@ private:
 
 
 public:
-    QSslSocket *socket1;
     QString mainUrl;
     QString meetingID;
     QMap<QString,QString>  hexTounicode;
+    QStringList matchs;
 
     QByteArray chats;
     QByteArray cursor;
@@ -54,6 +70,8 @@ public:
     QByteArray deskshare1;
     QByteArray webcams;
     QByteArray sourceSilde;
+    QByteArray moving;
+
 
 
 
@@ -63,13 +81,52 @@ public:
     QFile deskshare1_file;
     QFile webcams_file;
     QFile sourceSlide_file;
+    QFile moving_file;
+    QFile detailDesshare_file;
+    QFile match_namefile;
 
 
 
     void start_program();
-    void readSocket();
     void downloader();
     void add_hexTounicode();
     QByteArray convertTounicode(QByteArray);
+
+
+
+
+public:
+
+    struct struct_chat
+    {
+        int in;
+        QString name;
+        QString massage;
+    };
+
+    struct struct_moving
+    {
+        float in;
+        float out;
+        int number_slide;
+        int number_seriSlide;// -1 ==deskshare   -2==logo
+        int wigth;
+        int height;
+        int x;
+        int y;
+    };
+
+
+    QVector<struct_Slides1> serial_Slide;
+    QList<struct_chat> serial_Chat;
+    QList<struct_moving> serial_Moving;
+    QMap<QString,int> convertNameSlideTonumber;
+
+
+
+
+
+
+    void player();
 };
 #endif // MAINWINDOW_H
