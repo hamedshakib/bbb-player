@@ -26,6 +26,12 @@
 //#include "QMediaPlayer"
 //#include <QVideoWidget>
 #include "qvideowidget.h"
+#include "qthread.h"
+
+#include "QListWidget"
+#include "QListWidgetItem"
+#include "QTextEdit"
+#include "QSize"
 
 
 
@@ -119,19 +125,47 @@ public:
         int x;
         int y;
     };
+    struct struct_curcer
+    {
+        float timestamp;
+        float x;
+        float y;
+    };
+
+
+
+
+    enum{
+        Mouse,Slide,desktopShare,Chats
+    };
 
 
     QVector<struct_Slides1> serial_Slide;
     QList<struct_chat> serial_Chat;
     QList<struct_moving> serial_Moving;
+    QList<struct_curcer> serial_curcer;
     QMap<QString,int> convertNameSlideTonumber;
     HamedMediaPlayer *mediaPlayer1;
+    HamedMediaPlayer *mediaPlayer2;
 
+    QVideoWidget *videoWidget2;
+    QVideoWidget *videoWidget1;
+    QTimer *timer_mouse;
+    QTimer *timer_slide;
+    QTimer *timer_deskshare;
+    QTimer *timer_chat;
+    int now_mouse;
+    int now_slide;
+    int now_chat=0;
+    QListWidget *widgetChats;
 
+    QSize appSize;
 
 
 
 
     void player();
+public slots:
+    void checkNext(int type,int Number);
 };
 #endif // MAINWINDOW_H

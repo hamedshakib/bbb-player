@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
+#include "QScreen"
+#include "QApplication"
+#include "QDesktopWidget"
 using namespace std;
 mainwindow::mainwindow(QWidget *parent)
     : QMainWindow(parent)
@@ -8,6 +10,9 @@ mainwindow::mainwindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    appSize.setWidth(QApplication::desktop()->availableGeometry().width());
+    appSize.setHeight(QApplication::desktop()->availableGeometry().height() - (this->frameGeometry().height() - this->geometry().height())-20);
+    this->resize(appSize);
     start_program();
 }
 
@@ -22,6 +27,7 @@ void mainwindow::start_program()
     add_hexTounicode();
     //mainUrl="https://blue.aut.ac.ir/playback/presentation/2.3/aafbd590b53508afa2497f062107ca4d7fef952b-1606726815618?meetingId=aafbd590b53508afa2497f062107ca4d7fef952b-1606726815618";
     mainUrl="https://blue.aut.ac.ir/playback/presentation/2.3/4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554?meetingId=4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554";
+    //mainUrl="https://blue.aut.ac.ir/playback/presentation/2.3/92bfd138f9e4b831ff5fa32b13404cef46406750-1600444759735?meetingId=92bfd138f9e4b831ff5fa32b13404cef46406750-1600444759735";
     //downloader();
     player();
 
@@ -144,14 +150,16 @@ void mainwindow::downloader()
     //webcams_Asli and sound
 /*
     QString webcamsUrl1="https://blue.aut.ac.ir/presentation/"+meetingID+"/video/webcams.webm";
+    qDebug()<<webcamsUrl1;
     request1.setUrl(webcamsUrl1);
     replay1 = manager1->get(request1);
     eventLoop.exec();
-    webcams = replay1->readAll();
+    //webcams = replay1->readAll();
     QString namefileWebcams="Downloaded/"+meetingID+"/"+"webcams.webm";
     webcams_file.setFileName(namefileWebcams);
     if(webcams_file.open(QIODevice::ReadWrite))
     {
+        qDebug()<<"kar kard?";
        webcams_file.write(webcams);
        webcams_file.close();
     }
@@ -222,12 +230,16 @@ void mainwindow::downloader()
           QDir().mkdir("Downloaded/"+meetingID+"/Slides/"+QString::number(i));
         }
     QString slideUrl="https://blue.aut.ac.ir/presentation/"+meetingID+"/presentation/" +address_ha[i]+"/slide-";
-        for(int j=0;j<2;j++)
+        for(int j=0;j==0 or j<1000;j++)
         {
         request1.setUrl(slideUrl+QString::number(j+1)+".png");
         replay1 = manager1->get(request1);
         eventLoop.exec();
         QByteArray pic1 = replay1->readAll();
+        if(pic1=="<html>\r\n<head><title>404 Not Found</title></head>\r\n<body>\r\n<center><h1>404 Not Found</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n")
+        {
+            break;
+        }
         QFile file15;
         file15.setFileName("Downloaded/"+meetingID+"/Slides/"+QString::number(i)+"/slide-"+QString::number(j+1));
         if(file15.open(QIODevice::WriteOnly))
@@ -419,14 +431,14 @@ void mainwindow::player()
 {
     //read All
     //read slides
-    QString address_downloaded="F:/c programer/winner 99.11/az-bbb/build-bbb-Desktop_Qt_5_15_2_MinGW_64_bit-Debug/Downloaded/4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554";
+    QString address_downloaded="F:/c programer/winner 99.11/az-bbb/build-bbb-Desktop_Qt_5_15_2_MinGW_64_bit-Release/Downloaded/4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554";
     QDir dir1(address_downloaded+"/Slides");
     dir1.setFilter( QDir::AllEntries | QDir::NoDotAndDotDot );
     for(int i=0;i<dir1.count();i++)
     {
         serial_Slide.append(struct_Slides1());
-        QDir dir2(address_downloaded+"/Slides/"+QString::number(i+1));
-        dir2.setFilter( QDir::AllEntries | QDir::NoDotAndDotDot );
+        QDir dir2(address_downloaded+"/Slides/"+QString::number(i));
+        dir2.setFilter( QDir::AllEntries | QDir::NoDotAndDotDot);
         for(int j=0;j<dir2.count();j++)
         {
             QFile fileTemp;
@@ -491,13 +503,15 @@ void mainwindow::player()
         {
             serial_Moving[i].number_seriSlide=convertNameSlideTonumber.value(temp3.mid(0,temp3.indexOf("/")));
             serial_Moving[i].number_slide=temp3.mid(temp3.indexOf("/slide-")+7,moving.indexOf(".",moving.indexOf("/slide-"))-temp3.indexOf("/slide-")-7).toInt()-1;
+            serial_Moving[i].number_slide=temp3.mid(temp3.indexOf("/slide-")+7,moving.indexOf(".",moving.indexOf("/slide-"))-temp3.indexOf("/slide-")-7).remove(".png").toInt()-1;
+            //qDebug()<<"@@@="<<temp3.mid(temp3.indexOf("/slide-")+7,moving.indexOf(".",moving.indexOf("/slide-"))-temp3.indexOf("/slide-")-7);
         }
         else
             if(temp3=="logo.png")
-                serial_Moving[i].number_seriSlide=-1;
+                serial_Moving[i].number_seriSlide=-2;
         else
             if(temp3=="deskshare.png")
-                serial_Moving[i].number_seriSlide=-2;
+                serial_Moving[i].number_seriSlide=-1;
 
 
         serial_Moving[i].wigth=moving.mid(moving.indexOf("width=\"")+7,moving.indexOf("\" ",moving.indexOf("width=\""))-moving.indexOf("width=\"")-7).toInt();
@@ -509,26 +523,250 @@ void mainwindow::player()
     //*important* later should add shape example circle and path to this application
     }
 
-
+        for(int az=0;az<serial_Moving.count();az++)
+        qDebug()<<serial_Moving[az].number_slide;
 
     //
+    //read curcer
+    cursor_file.setFileName(address_downloaded+"/cursor.xml");
+    if(cursor_file.open(QIODevice::ReadOnly))
+    {
+        while(!cursor_file.atEnd())
+        cursor=cursor_file.readAll();
+    }
+    for(int i=0;cursor.indexOf("<event timestamp=")!=-1 ;i++)
+    {
+        serial_curcer.append(struct_curcer());
+        serial_curcer[i].timestamp=cursor.mid(cursor.indexOf("timestamp=\"")+11,cursor.indexOf("\">",cursor.indexOf("timestamp=\""))-cursor.indexOf("timestamp=\"")-11).toFloat();
+        serial_curcer[i].x=cursor.mid(cursor.indexOf("<cursor>")+8,cursor.indexOf(" ",cursor.indexOf("<cursor>"))-cursor.indexOf("<cursor>")-8).toFloat();
+        cursor.remove(0,cursor.indexOf("<cursor>")+8);
+        //qDebug()<<cursor.indexOf(" ")+1<<"/"<<cursor.indexOf("</cursor>")-1;
+        serial_curcer[i].y=cursor.mid(cursor.indexOf(" ")+1,cursor.indexOf("</cursor>")-cursor.indexOf(" ")-1).toFloat();
+        cursor.remove(0,cursor.indexOf("</cursor>")+9);
+    }
 
+
+
+    //mouse
+    timer_mouse = new QTimer(this);
+       QList<struct_curcer> a=serial_curcer;
+       connect(timer_mouse, &QTimer::timeout, this, [&,a]()
+       {
+           for(int i=0;i<a.count();i++)
+           if(i !=a.count()-1 and a[i+1].timestamp>=mediaPlayer1->position()*mediaPlayer1->duration()/1000)
+           if(i !=a.count()-2 and a[i+2].timestamp>=mediaPlayer1->position()*mediaPlayer1->duration()/1000)
+           {
+               continue;
+           }
+           else
+           {
+               if(now_mouse!=i)
+               {
+               now_mouse=i+1;
+               checkNext(0,now_mouse);
+               }
+               break;
+           }
+
+       });
+       timer_mouse->start(100);
+
+       //slide
+       timer_slide = new QTimer(this);
+          QList<struct_moving> b=serial_Moving;
+          connect(timer_slide, &QTimer::timeout, this, [&,b]()
+          {
+              for(int i=0;i<b.count();i++)
+              {
+              if(b[i].in<(mediaPlayer1->position()*mediaPlayer1->duration()/1000))
+              {
+              if(i !=b.count()-1 and b[i+1].in<=mediaPlayer1->position()*mediaPlayer1->duration()/1000)
+                {
+                  //qDebug()<<"shoddd";
+                  continue;
+                }
+              if(b[i].out>=mediaPlayer1->position()*mediaPlayer1->duration()/1000)
+              {
+                  if(b[i].number_seriSlide!=-1)
+                  {
+                  //qDebug()<<"in1";
+                  now_slide=i;
+
+                  checkNext(1,now_slide);
+                  //qDebug()<<"in2";
+                  }
+                  else
+                  {
+                      now_slide=i;
+                      checkNext(2,now_slide);
+                  }
+                      //qDebug()<<"2222222";
+                      //b[i].number_slide
+                  //qDebug()<<"braked";
+                  break;
+              }
+              }
+            }
+          });
+          timer_slide->start(100);
+     //chat
+
+          timer_chat = new QTimer(this);
+             QList<struct_chat> c=serial_Chat;
+             connect(timer_chat, &QTimer::timeout, this, [&,c]()
+             {
+                for(int i=0;i<c.count();i++)
+                {
+                 if(c[i].in<(mediaPlayer1->position()*mediaPlayer1->duration()/1000))
+                 {
+                    qDebug()<<"hi";
+                    if(i !=c.count()-1 and c[i+1].in>=(mediaPlayer1->position()*mediaPlayer1->duration()/1000))
+                    {
+                        if(now_chat!=i)
+                        {
+                        now_chat=i;
+                        widgetChats->blockSignals(1);
+                        widgetChats->clear();
+                        widgetChats->blockSignals(0);
+                        qDebug()<<"\n\n\n\n";
+                        widgetChats->count();
+                        qDebug()<<"\n\n\n\n";
+                             for(int j=0;j<=i;j++)
+                             {
+                             checkNext(3,j);
+                             }
+                        }
+                    break;
+                    }
+                    else if(i==c.count()-1)
+                    checkNext(3,i);
+                 }
+
+                }
+             });
+          timer_chat->start(1000);
+
+
+
+
+
+
+
+    //play video
+
+
+    mediaPlayer2=new HamedMediaPlayer(this);
+    mediaPlayer2->setMedia(QUrl::fromLocalFile("F:/c programer/winner 99.11/az-bbb/build-bbb-Desktop_Qt_5_15_2_MinGW_64_bit-Debug/Downloaded/4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554/deskshare1.webm"));
+    //mediaPlayer2->setMedia(QUrl::fromLocalFile("E:/Videos/US Military Power 2017 - 2022.mp4"));
+    videoWidget2 = new QVideoWidget(this);
+    //videoWidget2->setGeometry(30,30,200,150);
+    //videoWidget2->show();
+    mediaPlayer2->setVideoOutput(videoWidget2);
+/*
+
+    ui->label->setHidden(0);
+    //ui->gridLayout->removeWidget(ui->label);
+    ui->gridLayout->addWidget(videoWidget2);
+    //mediaPlayer2->play();
+    //mediaPlayer2->stop();
+
+    //double pos1=(5292.1*1000)/mediaPlayer2->duration();;
+    //mediaPlayer2->setPosition(pos1);
+
+
+
+
+
+*/
     mediaPlayer1=new HamedMediaPlayer(this);
-    mediaPlayer1->setMedia(QUrl::fromLocalFile("F:/c programer/winner 99.11/az-bbb/build-bbb-Desktop_Qt_5_15_2_MinGW_64_bit-Debug/Downloaded/4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554/deskshare1.webm"));
+    mediaPlayer1->setMedia(QUrl::fromLocalFile("F:/c programer/winner 99.11/az-bbb/build-bbb-Desktop_Qt_5_15_2_MinGW_64_bit-Release/Downloaded/4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554/webcams.webm"));
+    //mediaPlayer1->setMedia(QUrl::fromLocalFile("E:/Videos/US Military Power 2017 - 2022.mp4"));
     QVideoWidget *videoWidget1 = new QVideoWidget(this);
     videoWidget1->show();
+    //videoWidget1->setHidden(1);
+
     mediaPlayer1->setVideoOutput(videoWidget1);
     mediaPlayer1->play();
+    //mediaPlayer2->play();
 
 
-/*
-    mediaPlayer1=new HamedMediaPlayer(this);
-    mediaPlayer1->setMedia(QUrl::fromLocalFile("F:/c programer/winner 99.11/az-bbb/build-bbb-Desktop_Qt_5_15_2_MinGW_64_bit-Debug/Downloaded/4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554/deskshare1.webm"));
-    mediaPlayer1->play();
-*/
+    //ui->verticalLayout->setGeometry(QRect(0,0,150,150));
+    ui->verticalLayout->addWidget(videoWidget1);
 
+    widgetChats=new QListWidget(this);
+    ui->verticalLayout->addWidget(widgetChats);
+    widgetChats->setFixedWidth(300);
+    widgetChats->setFixedHeight(250);
+    videoWidget1->setFixedWidth(300);
+
+    //show
+    ui->horizontalSlider->setRange(0,mediaPlayer1->duration()/1000);
+    connect(ui->horizontalSlider,&QSlider::sliderMoved, this,[&](int addad123){qDebug()<<(float)addad123/(mediaPlayer1->duration()/1000);mediaPlayer1->setPosition((float)addad123/(mediaPlayer1->duration()/1000));});
+    connect(mediaPlayer1,&HamedMediaPlayer::positionChanged,this,[&](float addad123){ui->horizontalSlider->setValue(addad123*mediaPlayer1->duration()/1000);});
+
+    widgetChats->setFixedWidth(appSize.width()*22/100);
+    widgetChats->setFixedHeight(appSize.height()*47/100);
+    videoWidget1->setFixedWidth(appSize.width()*22/100);
 
 }
+
+
+void mainwindow::checkNext(int type,int Number)
+{
+    if(type==Mouse)
+    {
+        //badan
+    }
+
+    else if(type==Slide)
+    {
+        mediaPlayer2->stop();
+            videoWidget2->setHidden(1);
+            ui->label->setHidden(0);
+        if(serial_Moving.at(Number).number_seriSlide!=-2)
+        {
+            ui->label->setHidden(0);
+            QPixmap pic1;
+            qDebug()<<serial_Moving.at(Number).number_seriSlide<<":"<<serial_Moving.at(Number).number_slide;
+            pic1.loadFromData(serial_Slide[serial_Moving.at(Number).number_seriSlide].slide1[serial_Moving.at(Number).number_slide]);
+            qDebug()<<"fin";
+            ui->label->setPixmap(pic1);
+        }
+    }
+    else if(type==desktopShare)
+    {
+        videoWidget2->setHidden(0);
+        ui->label->setHidden(1);
+        //ui->gridLayout->addWidget(videoWidget2);
+        //ui->gridLayout->removeWidget(ui->label);
+        mediaPlayer2->play();
+        mediaPlayer2->setPosition((serial_Moving[Number].in*1000)/mediaPlayer2->duration());
+    }
+    else if(type==Chats)
+    {
+        QWidget* widget = new QWidget(this);
+        QGridLayout* grid1 = new QGridLayout(this);
+        QString nametime = serial_Chat[Number].name + "\n"/* + time*/;
+        QLabel* lable4 = new QLabel(nametime, this);
+        QTextEdit* text = new QTextEdit(this);
+        text->setText(serial_Chat[Number].massage);
+        text->setReadOnly(1);
+        text->setStyleSheet("background-color: rgb(233, 255, 208)");
+        grid1->addWidget(lable4, 0, 0);
+        grid1->addWidget(text, 0, 1);
+
+
+        widget->setLayout(grid1);
+
+        QListWidgetItem* item = new QListWidgetItem;
+        int hi = 47 + (serial_Chat[Number].massage.length() / 20) * 9;
+        item->setSizeHint(QSize(150, hi));
+        widgetChats->addItem(item);
+        widgetChats->setItemWidget(item, widget);
+        widgetChats->scrollToBottom();
+    }
+}
+
 
 
 
