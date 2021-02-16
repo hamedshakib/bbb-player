@@ -7,16 +7,7 @@ mainwindow::mainwindow(QWidget *parent)
     , ui(new Ui::mainwindow)
 {
     ui->setupUi(this);
-
-    //this->showMaximized();
-    appSize.setWidth(QApplication::desktop()->availableGeometry().width());
-    appSize.setHeight(QApplication::desktop()->availableGeometry().height() - (this->frameGeometry().height() - this->geometry().height())-20-ui->menubar->height());
-    this->resize(appSize);
-
-
-    add_hexTounicode();
-    connect(ui->toolButton,&QToolButton::clicked,this,&mainwindow::setplayAndPause);
-    //start_program();
+    start_program();
 }
 
 mainwindow::~mainwindow()
@@ -26,32 +17,21 @@ mainwindow::~mainwindow()
 
 void mainwindow::start_program()
 {
+    appSize.setWidth(QApplication::desktop()->availableGeometry().width());
+    appSize.setHeight(QApplication::desktop()->availableGeometry().height() - (this->frameGeometry().height() - this->geometry().height())-20-ui->menubar->height());
+    this->resize(appSize);
+
 
     add_hexTounicode();
+    connect(ui->toolButton,&QToolButton::clicked,this,&mainwindow::setplayAndPause);
 
 
-
-
-
-
-
-
-
-    //mainUrl="https://blue.aut.ac.ir/playback/presentation/2.3/aafbd590b53508afa2497f062107ca4d7fef952b-1606726815618?meetingId=aafbd590b53508afa2497f062107ca4d7fef952b-1606726815618";
-    //mainUrl="https://blue.aut.ac.ir/playback/presentation/2.3/4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554?meetingId=4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554";
-    //mainUrl="https://blue.aut.ac.ir/playback/presentation/2.3/92bfd138f9e4b831ff5fa32b13404cef46406750-1600444759735?meetingId=92bfd138f9e4b831ff5fa32b13404cef46406750-1600444759735";
-    //downloader();
-    //player();
-
-
-
-
-
-
-
-
-
-
+    mouse_lab=new QLabel(this);
+    QPixmap pixmap1("F:/c programer/winner 99.11/az-bbb/bbb/cursor_red.png");
+    mouse_lab->setPixmap(pixmap1.scaled(15,15,Qt::AspectRatioMode::KeepAspectRatio));
+    mouse_lab->setFixedSize(15,15);
+    mouse_lab->show();
+    mouse_lab->setHidden(1);
 
 
 }
@@ -374,6 +354,7 @@ void mainwindow::add_hexTounicode()
     hexTounicode.insert(QString("&#x62A;"),QString("ت"));
     hexTounicode.insert(QString("&#x62F;"),QString("د"));
     hexTounicode.insert(QString("&#x6CC;"),QString("ی"));
+    hexTounicode.insert(QString("&#x62B;"),QString("ث"));
     hexTounicode.insert(QString("&#x2E;"),QString("."));
     hexTounicode.insert(QString("&#x21;"),QString("!"));
     hexTounicode.insert(QString("&#x23;"),QString("#"));
@@ -601,21 +582,51 @@ void mainwindow::player()
        connect(timer_mouse, &QTimer::timeout, this, [&,a]()
        {
            for(int i=0;i<a.count();i++)
-           if(i !=a.count()-1 and a[i+1].timestamp>=mediaPlayer1->position()*mediaPlayer1->duration()/1000)
-           if(i !=a.count()-2 and a[i+2].timestamp>=mediaPlayer1->position()*mediaPlayer1->duration()/1000)
            {
-               continue;
-           }
-           else
-           {
-               if(now_mouse!=i)
+               //az shoro
+               if(a[i].timestamp<=mediaPlayer1->position()*mediaPlayer1->duration()/1000)
                {
-               now_mouse=i+1;
-               checkNext(0,now_mouse);
+
+               if(i !=a.count()-1 and a[i+1].timestamp>=mediaPlayer1->position()*mediaPlayer1->duration()/1000)
+               {
+                   if(now_mouse!=i)
+                   {
+                       now_mouse=i;
+                       qDebug()<<"mouse";
+                       checkNext(0,now_mouse);
+                       break;
+                   }
+               }
+               else
+               {
+                   continue;
+               }
+
                }
                break;
-           }
 
+               //az end
+
+           /***
+            if(i !=a.count()-1 and a[i+1].timestamp>=mediaPlayer1->position()*mediaPlayer1->duration()/1000)
+            {
+             if(i !=a.count()-2 and a[i+2].timestamp>=mediaPlayer1->position()*mediaPlayer1->duration()/1000)
+              {
+               continue;
+              }
+              else
+              {
+                if(now_mouse!=i)
+                {
+                now_mouse=i+1;
+                checkNext(0,now_mouse);
+                }
+               break;
+              }
+            }
+            ***/
+
+        }
        });
        timer_mouse->start(timer_mouse_time);
 
@@ -667,7 +678,6 @@ void mainwindow::player()
                 {
                  if(c[i].in<(mediaPlayer1->position()*mediaPlayer1->duration()/1000))
                  {
-                    qDebug()<<"hi";
                     if(i !=c.count()-1 and c[i+1].in>=(mediaPlayer1->position()*mediaPlayer1->duration()/1000))
                     {
                         if(now_chat!=i)
@@ -708,35 +718,14 @@ void mainwindow::player()
 
     if(QFile::exists(address_downloaded+"/deskshare1.webm"))
     {
-    //mediaPlayer2=new HamedMediaPlayer(this);
     mediaPlayer2->setMedia(QUrl::fromLocalFile(address_downloaded+"/deskshare1.webm"));
-    //mediaPlayer2->setMedia(QUrl::fromLocalFile("F:/c programer/winner 99.11/az-bbb/build-bbb-Desktop_Qt_5_15_2_MinGW_64_bit-Debug/Downloaded/4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554/deskshare1.webm"));
-    //mediaPlayer2->setMedia(QUrl::fromLocalFile("E:/Videos/US Military Power 2017 - 2022.mp4"));
-    //videoWidget2->setGeometry(30,30,200,150);
-    //videoWidget2->show();
+
     mediaPlayer2->setVideoOutput(videoWidget2);
     }
-/*
 
-    ui->label->setHidden(0);
-    //ui->gridLayout->removeWidget(ui->label);
-    ui->gridLayout->addWidget(videoWidget2);
-    //mediaPlayer2->play();
-    //mediaPlayer2->stop();
-
-    //double pos1=(5292.1*1000)/mediaPlayer2->duration();;
-    //mediaPlayer2->setPosition(pos1);
-
-
-
-
-
-*/
     mediaPlayer1=new HamedMediaPlayer(this);
 
     mediaPlayer1->setMedia(QUrl::fromLocalFile(address_downloaded+"/webcams.webm"));
-    //mediaPlayer1->setMedia(QUrl::fromLocalFile("F:/c programer/winner 99.11/az-bbb/build-bbb-Desktop_Qt_5_15_2_MinGW_64_bit-Release/Downloaded/4469cae04424e7c447dd19a015934c7b800c64c9-1602415836554/webcams.webm"));
-    //mediaPlayer1->setMedia(QUrl::fromLocalFile("E:/Videos/US Military Power 2017 - 2022.mp4"));
     QVideoWidget *videoWidget1 = new QVideoWidget(this);
     videoWidget1->show();
 
@@ -747,7 +736,6 @@ void mainwindow::player()
 
 
 
-    //ui->verticalLayout->setGeometry(QRect(0,0,150,150));
     ui->verticalLayout->addWidget(videoWidget1);
 
     widgetChats=new QListWidget(this);
@@ -763,9 +751,6 @@ void mainwindow::player()
     widgetChats->setFixedHeight(appSize.height()*47/100);
     videoWidget1->setFixedWidth(appSize.width()*22/100);
 
-    //this->showMaximized();
-    //this->showNormal();
-    //ui->centralwidget->showMaximized();
 
 }
 
@@ -773,7 +758,6 @@ void mainwindow::set_labelsize()
 {
     ui->label->setFixedWidth(appSize.width()*78/100);
     ui->label->setFixedHeight(appSize.width()*95/100);
-    //widgetChats->setFixedWidth(appSize.width()*22/100);
 }
 
 
@@ -781,8 +765,29 @@ void mainwindow::checkNext(int type,int Number)
 {
     if(type==Mouse)
     {
-        //badan
+        qDebug()<<"nabod1";
+        if(serial_curcer[Number].x!=-1 and  serial_curcer[Number].y!=-1)
+        {
+            qDebug()<<"nabod2";
+            //real mouse
+
+            mouse_lab->setHidden(false);
+            qDebug()<<"nabod3";
+            //30+13
+
+            mouse_lab->setGeometry((serial_curcer[Number].x*ui->label->width())+ui->label->x(),(serial_curcer[Number].y*(ui->label->pixmap()->height()))+ui->label->y()+ui->menubar->height()+((ui->label->pixmap()->height()-ui->label->height())/2)-5,mouse_lab->width(),mouse_lab->height());
+            //mouse_lab->setGeometry((serial_curcer[Number].x*ui->label->width())+ui->label->x(),(serial_curcer[Number].y*((ui->label->height()-pic5.height())/2))+(ui->menubar->height())+ui->label->y(),mouse_lab->width(),mouse_lab->height());
+            //mouse_lab->setGeometry((serial_curcer[Number].x*ui->label->width())+ui->label->x(),(serial_curcer[Number].y*ui->label->height()*.97)+(ui->menubar->height()+5)+ui->label->y(),mouse_lab->width(),mouse_lab->height());
+            //qDebug()<<"nabod4";
+        }
+        else
+        {
+            mouse_lab->setHidden(1);
+        }
+
+
     }
+
 
     else if(type==Slide)
     {
@@ -798,13 +803,14 @@ void mainwindow::checkNext(int type,int Number)
         if(serial_Moving.at(Number).number_seriSlide!=-2)
         {
             ui->label->setHidden(0);
-            QPixmap pic1;
+            pic5;
             qDebug()<<serial_Moving.at(Number).number_seriSlide<<":"<<serial_Moving.at(Number).number_slide;
-            pic1.loadFromData(serial_Slide[serial_Moving.at(Number).number_seriSlide].slide1[serial_Moving.at(Number).number_slide]);
+            pic5.loadFromData(serial_Slide[serial_Moving.at(Number).number_seriSlide].slide1[serial_Moving.at(Number).number_slide]);
             qDebug()<<"fin";
-            ui->label->setPixmap(pic1.scaled(ui->label->width(),ui->label->height(),Qt::AspectRatioMode::KeepAspectRatio));
+            ui->label->setPixmap(pic5.scaled(ui->label->width(),ui->label->height(),Qt::AspectRatioMode::KeepAspectRatio));
         }
     }
+
     else if(type==desktopShare)
     {
         videoWidget2->setHidden(0);
@@ -818,6 +824,7 @@ void mainwindow::checkNext(int type,int Number)
         mediaPlayer2->setPosition((serial_Moving[Number].in*1000)/mediaPlayer2->duration());
 
     }
+
     else if(type==Chats)
     {
         QWidget* widget = new QWidget(this);
@@ -969,7 +976,6 @@ void mainwindow::manageSizeDownload(qint64 bytesReceived, qint64 bytesTotal)
 void mainwindow::change_slider(float pos)
 {
     ui->horizontalSlider->setValue(pos*mediaPlayer1->duration()/1000);
-    qDebug()<<"didam"<<(int)(pos*mediaPlayer1->duration())%(1000*60)/1000;
     QString now_time=QString::number((int)(pos*mediaPlayer1->duration())/(1000*60))+":"+QString::number((int)(pos*mediaPlayer1->duration())%(1000*60)/1000);
     QString duratin=QString::number((int)(mediaPlayer1->duration())/(1000*60))+":"+QString::number((int)(mediaPlayer1->duration())%(1000*60)/1000);
     ui->label_2->setText(now_time+"/"+duratin);

@@ -42,6 +42,7 @@
 #include "QGridLayout"
 #include "QFileDialog"
 #include "QMessageBox"
+#include "QLabel"
 
 
 #define timer_mouse_time 100
@@ -183,6 +184,9 @@ public:
     long long int tempdownloaded=0;
     long long int downloaded_complited=0;
     bool played_player2=false;
+
+    QLabel *mouse_lab;
+    QPixmap pic5;
 
 
 
