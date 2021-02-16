@@ -32,6 +32,21 @@
 #include "QListWidgetItem"
 #include "QTextEdit"
 #include "QSize"
+#include "QScreen"
+#include "QApplication"
+#include "QDesktopWidget"
+#include "QDialog"
+#include "QLineEdit"
+#include "QPushButton"
+#include "QProgressBar"
+#include "QGridLayout"
+#include "QFileDialog"
+#include "QMessageBox"
+
+
+#define timer_mouse_time 100
+#define timer_slide_time 100
+#define timer_chat_time 1000
 
 
 
@@ -140,6 +155,7 @@ public:
     };
 
 
+    QString address_downloaded;
     QVector<struct_Slides1> serial_Slide;
     QList<struct_chat> serial_Chat;
     QList<struct_moving> serial_Moving;
@@ -160,12 +176,29 @@ public:
     QListWidget *widgetChats;
 
     QSize appSize;
+    QDialog *download_Dialog;
+    QGridLayout *dialog_layout;
+    QProgressBar *progressBar;
+    long long int All_size;
+    long long int tempdownloaded=0;
+    long long int downloaded_complited=0;
+    bool played_player2=false;
 
 
 
 
     void player();
+    void set_labelsize();
+
 public slots:
     void checkNext(int type,int Number);
+    void download_gui();
+    void manageSizeDownload(qint64 bytesReceived, qint64 bytesTotal);
+    void change_slider(float pos);
+    void setplayAndPause();
+private slots:
+    void on_actionDownload_triggered();
+    void on_actionOpen_File_triggered();
+    void on_actionAbout_triggered();
 };
 #endif // MAINWINDOW_H

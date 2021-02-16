@@ -18,7 +18,7 @@
     <item row="1" column="0">
      <widget class="QToolButton" name="toolButton">
       <property name="text">
-       <string>play</string>
+       <string>Play  </string>
       </property>
      </widget>
     </item>
@@ -90,7 +90,6 @@
    <addaction name="menuTasks"/>
    <addaction name="menuAbout"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
   <action name="actionDownload">
    <property name="text">
     <string>Download</string>

@@ -773,7 +773,6 @@ void mainwindow::set_labelsize()
 {
     ui->label->setFixedWidth(appSize.width()*78/100);
     ui->label->setFixedHeight(appSize.width()*95/100);
-    //widgetChats->setFixedWidth(appSize.width()*22/100);
 }
 
 
