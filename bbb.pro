@@ -29,3 +29,6 @@ INCLUDEPATH +=$$PWD/Files/include
 
 LIBS += -L$$PWD/Files
 LIBS += -laxvlc -llibvlc -llibvlccore -lnpvlc
+LIBS += -llibcrypto-1_1-x64 -llibssl-1_1-x64 -lvcruntime140_1
+
+RC_FILE = bbb-player.rc

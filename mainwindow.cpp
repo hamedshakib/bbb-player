@@ -7,6 +7,8 @@ mainwindow::mainwindow(QWidget *parent)
     , ui(new Ui::mainwindow)
 {
     ui->setupUi(this);
+    this->setWindowTitle("Hamed BBB-Player");
+
     start_program();
 }
 
@@ -27,11 +29,14 @@ void mainwindow::start_program()
 
 
     mouse_lab=new QLabel(this);
-    QPixmap pixmap1("F:/c programer/winner 99.11/az-bbb/bbb/cursor_red.png");
+    QPixmap pixmap1("cursor_red.png");
     mouse_lab->setPixmap(pixmap1.scaled(15,15,Qt::AspectRatioMode::KeepAspectRatio));
     mouse_lab->setFixedSize(15,15);
     mouse_lab->show();
     mouse_lab->setHidden(1);
+
+    thr_player1 =new QThread(this);
+    shortcut =new QShortcut(QKeySequence(Qt::Key::Key_Space), this, SLOT(setplayAndPause()));
 
 
 }
@@ -50,11 +55,11 @@ void mainwindow::downloader()
         QNetworkReply *replay1;
          QEventLoop eventLoop;
      QObject::connect(manager1, &QNetworkAccessManager::finished, &eventLoop, &QEventLoop::quit);
-     qDebug()<<"sssss";
+
      //make dir
      if(!QDir("Downloaded/"+meetingID).exists())
      {
-       qDebug()<<"hil";
+
        QDir().mkdir("Downloaded/");
        QDir().mkdir("Downloaded/"+meetingID);
      }
@@ -77,7 +82,7 @@ void mainwindow::downloader()
     }
 
     downloaded_complited+=replay1->header(QNetworkRequest::ContentLengthHeader).toULongLong();
-    qDebug()<<"progrss2";
+
 
 
 
@@ -100,7 +105,7 @@ void mainwindow::downloader()
 
     downloaded_complited+=replay1->header(QNetworkRequest::ContentLengthHeader).toULongLong();
     progressBar->setValue((float)(downloaded_complited)/All_size);
-    qDebug()<<"progress3";
+
     //metadata
     QString MetaData="https://blue.aut.ac.ir/presentation/"+meetingID+"/metadata.xml";
     request1.setUrl(MetaData);
@@ -120,7 +125,6 @@ void mainwindow::downloader()
     downloaded_complited+=replay1->header(QNetworkRequest::ContentLengthHeader).toULongLong();
     progressBar->setValue((float)((downloaded_complited)*100/All_size));
 
-    qDebug()<<"progress4";
 
     //desktopshare
     QString DeskshareUrl="https://blue.aut.ac.ir/presentation/"+meetingID+"/deskshare.xml";
@@ -140,7 +144,7 @@ void mainwindow::downloader()
     downloaded_complited+=replay1->header(QNetworkRequest::ContentLengthHeader).toULongLong();
     progressBar->setValue((float)((downloaded_complited)*100/All_size));
 
-    qDebug()<<"progress5";
+
 //pak
     //deskshare_Asli just share screen
     QString DeskshareUrl1="https://blue.aut.ac.ir/presentation/"+meetingID+"/deskshare/deskshare.webm";
@@ -161,12 +165,10 @@ void mainwindow::downloader()
     downloaded_complited+=replay1->header(QNetworkRequest::ContentLengthHeader).toULongLong();
     progressBar->setValue((float)((downloaded_complited)*100/All_size));
 //end pak
-    qDebug()<<"progress6";
+
     //webcams_Asli and sound
 //pak
-/*
     QString webcamsUrl1="https://blue.aut.ac.ir/presentation/"+meetingID+"/video/webcams.webm";
-    qDebug()<<webcamsUrl1;
     request1.setUrl(webcamsUrl1);
     replay1 = manager1->get(request1);
     connect(replay1,&QNetworkReply::downloadProgress,this,&mainwindow::manageSizeDownload);
@@ -176,7 +178,6 @@ void mainwindow::downloader()
     webcams_file.setFileName(namefileWebcams);
     if(webcams_file.open(QIODevice::ReadWrite))
     {
-        qDebug()<<"kar kard?";
        webcams_file.write(webcams);
        webcams_file.close();
     }
@@ -185,9 +186,8 @@ void mainwindow::downloader()
 
     downloaded_complited+=replay1->header(QNetworkRequest::ContentLengthHeader).toULongLong();
     progressBar->setValue((float)((downloaded_complited)*100/All_size));
-*/
 //end pak
-    qDebug()<<"progress7";
+
     //slides
     QString SourceSlideUrl="https://blue.aut.ac.ir/presentation/"+meetingID+"/presentation_text.json";
     request1.setUrl(SourceSlideUrl);
@@ -195,7 +195,6 @@ void mainwindow::downloader()
     connect(replay1,&QNetworkReply::downloadProgress,this,&mainwindow::manageSizeDownload);
     eventLoop.exec();
     sourceSilde = replay1->readAll();
-    //sourceSilde=convertTounicode(sourceSilde);
     QString namefileSourceSlide="Downloaded/"+meetingID+"/"+"presentation_text.json";
     sourceSlide_file.setFileName(namefileSourceSlide);
     if(sourceSlide_file.open(QIODevice::ReadWrite))
@@ -207,7 +206,7 @@ void mainwindow::downloader()
     progressBar->setValue((float)((downloaded_complited)*100/All_size));
 
 
-    //QString
+
     QStringList address_ha;
     QString str123=sourceSilde;
     QRegExp re;
@@ -222,7 +221,6 @@ void mainwindow::downloader()
         {
             if(str123[re.indexIn(str123)-i]=='\"')
             {
-               qDebug()<<"yes";
                addad=i;
                break;
             }
@@ -252,7 +250,7 @@ void mainwindow::downloader()
         QDir().mkdir("Downloaded/"+meetingID+"/Slides");
         if(!QDir("Downloaded/"+meetingID+"/Slides/"+QString::number(i)).exists())
         {
-          qDebug()<<"nist";
+          //make this dir
           QDir().mkdir("Downloaded/"+meetingID+"/Slides/"+QString::number(i));
         }
     QString slideUrl="https://blue.aut.ac.ir/presentation/"+meetingID+"/presentation/" +address_ha[i]+"/slide-";
@@ -533,7 +531,6 @@ void mainwindow::player()
             serial_Moving[i].number_seriSlide=convertNameSlideTonumber.value(temp3.mid(0,temp3.indexOf("/")));
             serial_Moving[i].number_slide=temp3.mid(temp3.indexOf("/slide-")+7,moving.indexOf(".",moving.indexOf("/slide-"))-temp3.indexOf("/slide-")-7).toInt()-1;
             serial_Moving[i].number_slide=temp3.mid(temp3.indexOf("/slide-")+7,moving.indexOf(".",moving.indexOf("/slide-"))-temp3.indexOf("/slide-")-7).remove(".png").toInt()-1;
-            //qDebug()<<"@@@="<<temp3.mid(temp3.indexOf("/slide-")+7,moving.indexOf(".",moving.indexOf("/slide-"))-temp3.indexOf("/slide-")-7);
         }
         else
             if(temp3=="logo.png")
@@ -552,8 +549,7 @@ void mainwindow::player()
     //*important* later should add shape example circle and path to this application
     }
 
-        for(int az=0;az<serial_Moving.count();az++)
-        qDebug()<<serial_Moving[az].number_slide;
+
 
     //
     //read curcer
@@ -569,7 +565,6 @@ void mainwindow::player()
         serial_curcer[i].timestamp=cursor.mid(cursor.indexOf("timestamp=\"")+11,cursor.indexOf("\">",cursor.indexOf("timestamp=\""))-cursor.indexOf("timestamp=\"")-11).toFloat();
         serial_curcer[i].x=cursor.mid(cursor.indexOf("<cursor>")+8,cursor.indexOf(" ",cursor.indexOf("<cursor>"))-cursor.indexOf("<cursor>")-8).toFloat();
         cursor.remove(0,cursor.indexOf("<cursor>")+8);
-        //qDebug()<<cursor.indexOf(" ")+1<<"/"<<cursor.indexOf("</cursor>")-1;
         serial_curcer[i].y=cursor.mid(cursor.indexOf(" ")+1,cursor.indexOf("</cursor>")-cursor.indexOf(" ")-1).toFloat();
         cursor.remove(0,cursor.indexOf("</cursor>")+9);
     }
@@ -592,7 +587,6 @@ void mainwindow::player()
                    if(now_mouse!=i)
                    {
                        now_mouse=i;
-                       qDebug()<<"mouse";
                        checkNext(0,now_mouse);
                        break;
                    }
@@ -641,27 +635,24 @@ void mainwindow::player()
               {
               if(i !=b.count()-1 and b[i+1].in<=mediaPlayer1->position()*mediaPlayer1->duration()/1000)
                 {
-                  //qDebug()<<"shoddd";
+
                   continue;
                 }
               if(b[i].out>=mediaPlayer1->position()*mediaPlayer1->duration()/1000)
               {
                   if(b[i].number_seriSlide!=-1)
                   {
-                  //qDebug()<<"in1";
+
                   now_slide=i;
 
                   checkNext(1,now_slide);
-                  //qDebug()<<"in2";
+
                   }
                   else
                   {
                       now_slide=i;
                       checkNext(2,now_slide);
                   }
-                      //qDebug()<<"2222222";
-                      //b[i].number_slide
-                  //qDebug()<<"braked";
                   break;
               }
               }
@@ -686,9 +677,6 @@ void mainwindow::player()
                         widgetChats->blockSignals(1);
                         widgetChats->clear();
                         widgetChats->blockSignals(0);
-                        qDebug()<<"\n\n\n\n";
-                        widgetChats->count();
-                        qDebug()<<"\n\n\n\n";
                              for(int j=0;j<=i;j++)
                              {
                              checkNext(3,j);
@@ -697,7 +685,14 @@ void mainwindow::player()
                     break;
                     }
                     else if(i==c.count()-1)
-                    checkNext(3,i);
+                    {
+                       if(now_chat!=i)
+                       {
+                       now_chat=i;
+                       checkNext(3,i);
+                       }
+                    }
+
                  }
 
                 }
@@ -724,7 +719,7 @@ void mainwindow::player()
     }
 
     mediaPlayer1=new HamedMediaPlayer(this);
-
+    mediaPlayer1->moveToThread(thr_player1);
     mediaPlayer1->setMedia(QUrl::fromLocalFile(address_downloaded+"/webcams.webm"));
     QVideoWidget *videoWidget1 = new QVideoWidget(this);
     videoWidget1->show();
@@ -732,6 +727,7 @@ void mainwindow::player()
 
     mediaPlayer1->setVideoOutput(videoWidget1);
     mediaPlayer1->play();
+    connect(mediaPlayer1,&HamedMediaPlayer::mediaStatusChanged,this,[&](int status){if(status==6) qApp->exit();});
     ui->toolButton->setText("Pause");
 
 
@@ -744,7 +740,7 @@ void mainwindow::player()
 
     //show
     ui->horizontalSlider->setRange(0,mediaPlayer1->duration()/1000);
-    connect(ui->horizontalSlider,&QSlider::sliderMoved, this,[&](int addad123){qDebug()<<(float)addad123/(mediaPlayer1->duration()/1000);mediaPlayer1->setPosition((float)addad123/(mediaPlayer1->duration()/1000));});
+    connect(ui->horizontalSlider,&QSlider::sliderMoved, this,[&](int addad123){mediaPlayer1->setPosition((float)addad123/(mediaPlayer1->duration()/1000));});
     connect(mediaPlayer1,&HamedMediaPlayer::positionChanged,this,&mainwindow::change_slider);
 
     widgetChats->setFixedWidth(appSize.width()*22/100);
@@ -754,31 +750,26 @@ void mainwindow::player()
 
 }
 
+/*
 void mainwindow::set_labelsize()
 {
     ui->label->setFixedWidth(appSize.width()*78/100);
     ui->label->setFixedHeight(appSize.width()*95/100);
 }
-
+*/
 
 void mainwindow::checkNext(int type,int Number)
 {
     if(type==Mouse)
     {
-        qDebug()<<"nabod1";
         if(serial_curcer[Number].x!=-1 and  serial_curcer[Number].y!=-1)
         {
-            qDebug()<<"nabod2";
             //real mouse
 
             mouse_lab->setHidden(false);
-            qDebug()<<"nabod3";
             //30+13
 
-            mouse_lab->setGeometry((serial_curcer[Number].x*ui->label->width())+ui->label->x(),(serial_curcer[Number].y*(ui->label->pixmap()->height()))+ui->label->y()+ui->menubar->height()+((ui->label->pixmap()->height()-ui->label->height())/2)-5,mouse_lab->width(),mouse_lab->height());
-            //mouse_lab->setGeometry((serial_curcer[Number].x*ui->label->width())+ui->label->x(),(serial_curcer[Number].y*((ui->label->height()-pic5.height())/2))+(ui->menubar->height())+ui->label->y(),mouse_lab->width(),mouse_lab->height());
-            //mouse_lab->setGeometry((serial_curcer[Number].x*ui->label->width())+ui->label->x(),(serial_curcer[Number].y*ui->label->height()*.97)+(ui->menubar->height()+5)+ui->label->y(),mouse_lab->width(),mouse_lab->height());
-            //qDebug()<<"nabod4";
+            mouse_lab->setGeometry(((serial_curcer[Number].x*(ui->label->pixmap()->width())))+ui->label->x()-4,(serial_curcer[Number].y*(ui->label->pixmap()->height()))+ui->label->y()+ui->menubar->height()+((ui->label->height()-ui->label->pixmap()->height())/2)-5,mouse_lab->width(),mouse_lab->height());
         }
         else
         {
@@ -803,10 +794,7 @@ void mainwindow::checkNext(int type,int Number)
         if(serial_Moving.at(Number).number_seriSlide!=-2)
         {
             ui->label->setHidden(0);
-            pic5;
-            qDebug()<<serial_Moving.at(Number).number_seriSlide<<":"<<serial_Moving.at(Number).number_slide;
             pic5.loadFromData(serial_Slide[serial_Moving.at(Number).number_seriSlide].slide1[serial_Moving.at(Number).number_slide]);
-            qDebug()<<"fin";
             ui->label->setPixmap(pic5.scaled(ui->label->width(),ui->label->height(),Qt::AspectRatioMode::KeepAspectRatio));
         }
     }
@@ -814,11 +802,9 @@ void mainwindow::checkNext(int type,int Number)
     else if(type==desktopShare)
     {
         videoWidget2->setHidden(0);
-        //ui->label->setHidden(1);
         videoWidget2->setGeometry(appSize.width()*23/100,ui->menubar->height()+10,ui->label->size().width(),ui->label->size().height());
 
-        //ui->gridLayout->addWidget(videoWidget2);
-        //ui->gridLayout->removeWidget(ui->label);
+
         mediaPlayer2->play();
         played_player2=true;
         mediaPlayer2->setPosition((serial_Moving[Number].in*1000)/mediaPlayer2->duration());
@@ -874,7 +860,6 @@ void mainwindow::download_gui()
     connect(btn_download,&QPushButton::clicked,this,[&,url_lineEdit,dialog_layout1,lable_url,btn_download](bool a){
         if(url_lineEdit->text()!="")
         {
-            qDebug()<<"hii";
             mainUrl=url_lineEdit->text();
             meetingID=mainUrl.mid(mainUrl.indexOf("/2.3/",0)+5,mainUrl.length()-mainUrl.indexOf("?",0)-11);
             QNetworkRequest request1;
@@ -887,10 +872,9 @@ void mainwindow::download_gui()
             request1.setUrl(ChatUrl);
             replay1 = manager1->head(request1);
             eventLoop.exec();
-            //replay1
+
             All_size=0;
             All_size+=replay1->header(QNetworkRequest::ContentLengthHeader).toULongLong();
-            qDebug()<<"chats:"<<All_size;
 
             QString CursorUrl="https://blue.aut.ac.ir/presentation/"+meetingID+"/cursor.xml";
             request1.setUrl(CursorUrl);
@@ -902,7 +886,6 @@ void mainwindow::download_gui()
             replay1 = manager1->head(request1);
             eventLoop.exec();
             All_size+=replay1->header(QNetworkRequest::ContentLengthHeader).toULongLong();
-            qDebug()<<"chats and cursor:"<<All_size;
 
 
             QString DeskshareUrl="https://blue.aut.ac.ir/presentation/"+meetingID+"/deskshare.xml";
@@ -910,22 +893,18 @@ void mainwindow::download_gui()
             replay1 = manager1->head(request1);
             eventLoop.exec();
             All_size+=replay1->header(QNetworkRequest::ContentLengthHeader).toULongLong();
-            qDebug()<<"chats and cursor and deskxml:"<<All_size;
 
             QString DeskshareUrl1="https://blue.aut.ac.ir/presentation/"+meetingID+"/deskshare/deskshare.webm";
             request1.setUrl(DeskshareUrl1);
             replay1 = manager1->head(request1);
             eventLoop.exec();
             All_size+=replay1->header(QNetworkRequest::ContentLengthHeader).toULongLong();
-            qDebug()<<"chats and cursor and deskxml and deskshare:"<<All_size;
 
             QString webcamsUrl1="https://blue.aut.ac.ir/presentation/"+meetingID+"/video/webcams.webm";
-            qDebug()<<webcamsUrl1;
             request1.setUrl(webcamsUrl1);
             replay1 = manager1->head(request1);
             eventLoop.exec();
             All_size+=replay1->header(QNetworkRequest::ContentLengthHeader).toULongLong();
-            qDebug()<<"chats and cursor and deskxml and deskshare and webcam:"<<All_size;
 
             //slides
             QString SourceSlideUrl="https://blue.aut.ac.ir/presentation/"+meetingID+"/presentation_text.json";
@@ -933,7 +912,6 @@ void mainwindow::download_gui()
             replay1 = manager1->head(request1);
             eventLoop.exec();
             All_size+=replay1->header(QNetworkRequest::ContentLengthHeader).toULongLong();
-            qDebug()<<"chats and cursor and deskxml and deskshare and webcam and addressslide:"<<All_size;
 
 
             QString Moving="https://blue.aut.ac.ir/presentation/"+meetingID+"/shapes.svg";
@@ -941,7 +919,6 @@ void mainwindow::download_gui()
             replay1 = manager1->head(request1);
             eventLoop.exec();
             All_size+=replay1->header(QNetworkRequest::ContentLengthHeader).toULongLong();
-            qDebug()<<"chats and cursor and deskxml and deskshare and webcam and address_slide and shape:"<<All_size;
 
 
 
@@ -959,8 +936,6 @@ void mainwindow::download_gui()
 
 
         dialog_layout1->addWidget(progressBar,0,0);
-        qDebug()<<"didik";
-        qDebug()<<"hame size"<<All_size;
         downloader();
 
     });
@@ -1037,7 +1012,7 @@ void mainwindow::on_actionOpen_File_triggered()
 void mainwindow::on_actionAbout_triggered()
 {
     QMessageBox message;
-    message.setText("This application maked by hamed shakib\nPowered from Qt 5.15.2 and VLC 3.0.8");
+    message.setText("Hamed BBB-player is developed by hamed shakib\nPowered from Qt 5.15.2 and VLC 3.0.8");
     message.setButtonText(1,"Ok");
     message.exec();
 }

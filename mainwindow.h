@@ -43,6 +43,8 @@
 #include "QFileDialog"
 #include "QMessageBox"
 #include "QLabel"
+#include "qthread.h"
+#include "QShortcut"
 
 
 #define timer_mouse_time 100
@@ -155,7 +157,7 @@ public:
         Mouse,Slide,desktopShare,Chats
     };
 
-
+    QThread *thr_player1;
     QString address_downloaded;
     QVector<struct_Slides1> serial_Slide;
     QList<struct_chat> serial_Chat;
@@ -187,12 +189,15 @@ public:
 
     QLabel *mouse_lab;
     QPixmap pic5;
+    QShortcut *shortcut;
+
+
 
 
 
 
     void player();
-    void set_labelsize();
+    //void set_labelsize();
 
 public slots:
     void checkNext(int type,int Number);
